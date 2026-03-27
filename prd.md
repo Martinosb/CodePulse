@@ -11,7 +11,7 @@ As the AI builder, your mandate is not just to compile functional code. You must
 
 ### 🛠 Tech Stack Directives
 - **Framework:** Next.js 16 (App Router exclusively). Utilize React Server Components (RSC) for initial data fetching and Server Actions for mutations.
-- **Database & Auth:** Supabase. Use Google OAuth for sign-in, and PostgreSQL for relational data.
+- **Database & Auth:** Supabase. Use Supabase Auth (Email/Password) for sign-in initially, with a planned upgrade to Google OAuth later. Use PostgreSQL for relational data.
 - **Styling:** Tailwind CSS integrated with `shadcn/ui`. **CRITICAL:** You must override default shadcn styles to comply perfectly with the `./design.md` file (translucent panels, heavy blurs, glowing orbs).
 - **Animations:** `framer-motion`. Every interactive element, page transition, and modal must animate smoothly using spring physics.
 - **Data Fetching/State:** SWR or React Query for client-side polling (leaderboards need to feel real-time).
@@ -72,7 +72,7 @@ When implementing the UI, you must use **Framer Motion** extensively:
 ## ⚙️ 4. Core System Workflows
 
 ### 4.1. Authentication & Onboarding
-- **Route:** `/login` -> Glassmorphism login card. Google OAuth only.
+- **Route:** `/login` -> Glassmorphism login card. Supabase Email/Password Auth for now (Google OAuth planned).
 - **Route:** `/onboarding` -> A Framer Motion powered step-wizard.
   - Step 1: Request WakaTime Account creation.
   - Step 2: Input WakaTime Secret API Key. Store this encrypted in Supabase.
@@ -109,7 +109,7 @@ When implementing the UI, you must use **Framer Motion** extensively:
 When you (the AI agent) begin executing this project, follow this exact sequence:
 
 1. **Phase 1: Foundation.** Initialize Next.js 16, Tailwind, framer-motion, and shadcn/ui. Set up the exact color variables and typography defined in `./design.md` in `globals.css` and `tailwind.config.ts`.
-2. **Phase 2: Database & Auth.** Connect to Supabase. Implement Google OAuth and build the beautifully animated `/login` and `/onboarding` views.
+2. **Phase 2: Database & Auth.** Connect to Supabase. Implement Supabase Email/Password Auth and build the beautifully animated `/login` and `/onboarding` views.
 3. **Phase 3: Shell & Navigation.** Build the global layout (`/(app)/layout.tsx`). Implement the glass sidebar and mobile drawer with Framer Motion `AnimatePresence`. Ensure active states use `layoutId`.
 4. **Phase 4: Dashboard & Leaderboard UI.** Build the stat cards, leaderboards, and goal lists with mock data first. Perfect the hover states and entry animations to guarantee the Jony Ive feel.
 5. **Phase 5: WakaTime Integration.** Build the server actions/edge functions to securely handle API keys, fetch from WakaTime, and update the database. Connect the UI to real data.
