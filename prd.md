@@ -20,7 +20,7 @@ As the AI builder, your mandate is not just to compile functional code. You must
 ---
 
 ## 🗄 2. Database Schema Design (Supabase PostgreSQL)
-You must initialize the database with the following core entities. Ensure Row Level Security (RLS) is strictly enforced.
+You must initialize the database with the following core entities. Ensure Row Level Security (RLS) is strictly enforced. **CRITICAL:** The AI agent must generate standard Supabase migration files (e.g., `supabase/migrations/XXXXXXXXXXXXXX_init.sql`) to define and create this database schema, rather than executing raw SQL directly or expecting the user to use the UI.
 
 1. **`users`**
    - `id` (uuid, references `auth.users`)
