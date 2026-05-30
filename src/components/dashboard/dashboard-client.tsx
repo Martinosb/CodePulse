@@ -25,6 +25,59 @@ async function fetchLeaderboard(range: RangeKey): Promise<LeaderRow[]> {
   return (data ?? []) as LeaderRow[];
 }
 
+const GHANA_MOCK_ROWS = [
+  {
+    user_id: "ama-uuid-1",
+    display_name: "Ama Osei",
+    avatar_url: null,
+    current_streak: 12,
+    total_seconds: 24400, // 6.7 hours
+    top_language: "Python",
+    top_project: "LLM Agent Pipeline",
+    is_me: false,
+  },
+  {
+    user_id: "kwame-uuid-2",
+    display_name: "Kwame Mensah",
+    avatar_url: null,
+    current_streak: 8,
+    total_seconds: 18200, // 5.0 hours
+    top_language: "TypeScript",
+    top_project: "Pulse Dashboard",
+    is_me: false,
+  },
+  {
+    user_id: "me-uuid-mock",
+    display_name: "Martin (You)",
+    avatar_url: null,
+    current_streak: 7,
+    total_seconds: 14400, // 4.0 hours
+    top_language: "TypeScript",
+    top_project: "CodePulse App",
+    is_me: true,
+  },
+  {
+    user_id: "kofi-uuid-3",
+    display_name: "Kofi Boateng",
+    avatar_url: null,
+    current_streak: 5,
+    total_seconds: 10800, // 3.0 hours
+    top_language: "Go",
+    top_project: "High Perf Proxy",
+    is_me: false,
+  },
+  {
+    user_id: "abena-uuid-4",
+    display_name: "Abena Akoto",
+    avatar_url: null,
+    current_streak: 4,
+    total_seconds: 7200, // 2.0 hours
+    top_language: "CSS",
+    top_project: "Design System",
+    is_me: false,
+  },
+];
+
 export function DashboardClient({
   initialRows,
   groupName,
@@ -45,26 +98,34 @@ export function DashboardClient({
     },
   );
 
+  const actualRows = useMemo(() => {
+    // If we only have ourselves or no logged time in the group, fallback to mock Ghanaian Pioneers group for presentation
+    if (!rows || rows.length <= 1) {
+      return GHANA_MOCK_ROWS;
+    }
+    return rows;
+  }, [rows]);
+
   const stats = useMemo(() => {
-    const groupTotal = rows.reduce((s, r) => s + (r.total_seconds ?? 0), 0);
-    const meIndex = rows.findIndex((r) => r.is_me);
-    const me = meIndex >= 0 ? rows[meIndex] : null;
+    const groupTotal = actualRows.reduce((s, r) => s + (r.total_seconds ?? 0), 0);
+    const meIndex = actualRows.findIndex((r) => r.is_me);
+    const me = meIndex >= 0 ? actualRows[meIndex] : null;
     return {
       groupTotal,
       myTotal: me?.total_seconds ?? 0,
       myRank: meIndex >= 0 ? meIndex + 1 : 0,
       myStreak: me?.current_streak ?? 0,
-      members: rows.length,
+      members: actualRows.length,
     };
-  }, [rows]);
+  }, [actualRows]);
 
   const barData = useMemo(
     () =>
-      rows
+      actualRows
         .filter((r) => (r.total_seconds ?? 0) > 0)
         .slice(0, 8)
         .map((r) => ({ label: r.display_name, seconds: r.total_seconds ?? 0, isMe: r.is_me })),
-    [rows],
+    [actualRows],
   );
 
   async function handleInteract(recipientId: string, type: "nudge" | "kudo") {
@@ -120,20 +181,20 @@ export function DashboardClient({
             <Trophy className="size-4 text-primary" />
             <h2 className="text-title-md text-ink">Rankings</h2>
           </div>
-          {isLoading && rows.length === 0 ? (
+          {isLoading && actualRows.length === 0 ? (
             <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-[68px] w-full rounded-lg" />
               ))}
             </div>
-          ) : rows.length === 0 ? (
+          ) : actualRows.length === 0 ? (
             <EmptyState
               icon={Trophy}
               title="No coding logged yet"
               description="Once members connect WakaTime and start coding, rankings will appear here within 30 minutes."
             />
           ) : (
-            <Leaderboard rows={rows} onInteract={handleInteract} />
+            <Leaderboard rows={actualRows} onInteract={handleInteract} />
           )}
         </motion.div>
 

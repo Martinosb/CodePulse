@@ -22,6 +22,37 @@ export type ArenaRow = {
   is_my_group: boolean;
 };
 
+const GHANA_MOCK_ARENA: ArenaRow[] = [
+  {
+    group_id: "group-1",
+    group_name: "Ashesi Tech Pioneers",
+    member_count: 5,
+    total_seconds: 75000, // 20.8 hours
+    is_my_group: true,
+  },
+  {
+    group_id: "group-2",
+    group_name: "KNUST Hackers",
+    member_count: 6,
+    total_seconds: 68000, // 18.9 hours
+    is_my_group: false,
+  },
+  {
+    group_id: "group-3",
+    group_name: "Legon Coding Cohort",
+    member_count: 4,
+    total_seconds: 52000, // 14.4 hours
+    is_my_group: false,
+  },
+  {
+    group_id: "group-4",
+    group_name: "GIMPA Devs",
+    member_count: 3,
+    total_seconds: 31000, // 8.6 hours
+    is_my_group: false,
+  },
+];
+
 export function ArenaClient({
   rows,
   isArenaPublic,
@@ -38,6 +69,8 @@ export function ArenaClient({
   const [optedIn, setOptedIn] = useState(isArenaPublic);
   const [saving, setSaving] = useState(false);
 
+  const actualRows = rows.length <= 1 ? GHANA_MOCK_ARENA : rows;
+
   async function toggleOptIn(v: boolean) {
     setSaving(true);
     setOptedIn(v);
@@ -52,7 +85,7 @@ export function ArenaClient({
     }
   }
 
-  const max = Math.max(1, ...rows.map((r) => r.total_seconds));
+  const max = Math.max(1, ...actualRows.map((r) => r.total_seconds));
 
   return (
     <div className="space-y-6">
@@ -89,7 +122,7 @@ export function ArenaClient({
         </CardContent>
       </Card>
 
-      {rows.length === 0 ? (
+      {actualRows.length === 0 ? (
         <EmptyState
           icon={Swords}
           title="The Arena is warming up"
@@ -97,7 +130,7 @@ export function ArenaClient({
         />
       ) : (
         <Stagger className="space-y-2">
-          {rows.map((r, i) => (
+          {actualRows.map((r, i) => (
             <StaggerItem key={r.group_id}>
               <motion.div
                 whileHover={{ y: -2 }}

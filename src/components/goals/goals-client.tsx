@@ -30,8 +30,45 @@ export type GoalRow = {
   created_at: string;
 };
 
+const GHANA_MOCK_GOALS: GoalRow[] = [
+  {
+    id: "goal-1",
+    title: "Grind 50 LeetCode Problems",
+    language: "TypeScript",
+    duration_seconds_target: 3600, // 1 hour
+    frequency: "daily",
+    status: "active",
+    period_start: new Date().toISOString().split("T")[0],
+    computed_seconds: 2400, // 40 minutes done
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "goal-2",
+    title: "Complete React 19 Editorial Form UI",
+    language: "TypeScript",
+    duration_seconds_target: 7200, // 2 hours
+    frequency: "daily",
+    status: "completed",
+    period_start: new Date().toISOString().split("T")[0],
+    computed_seconds: 7200,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "goal-3",
+    title: "Write Supabase Edge Function Sync Triggers",
+    language: "TypeScript",
+    duration_seconds_target: 14400, // 4 hours
+    frequency: "weekly",
+    status: "completed",
+    period_start: new Date().toISOString().split("T")[0],
+    computed_seconds: 18000,
+    created_at: new Date().toISOString(),
+  },
+];
+
 export function GoalsClient({ goals }: { goals: GoalRow[] }) {
   const [open, setOpen] = useState(false);
+  const actualGoals = goals.length === 0 ? GHANA_MOCK_GOALS : goals;
 
   return (
     <div className="space-y-6">
@@ -45,7 +82,7 @@ export function GoalsClient({ goals }: { goals: GoalRow[] }) {
         </Button>
       </div>
 
-      {goals.length === 0 ? (
+      {actualGoals.length === 0 ? (
         <EmptyState
           icon={Target}
           title="No goals yet"
@@ -55,7 +92,7 @@ export function GoalsClient({ goals }: { goals: GoalRow[] }) {
       ) : (
         <Stagger className="grid gap-3 sm:grid-cols-2">
           <AnimatePresence>
-            {goals.map((g) => (
+            {actualGoals.map((g) => (
               <StaggerItem key={g.id}>
                 <GoalCard goal={g} />
               </StaggerItem>

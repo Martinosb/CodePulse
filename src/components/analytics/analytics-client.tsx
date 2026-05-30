@@ -18,6 +18,32 @@ const ICONS: Record<string, LucideIcon> = {
 
 type BadgeRow = { id: string; slug: string; name: string; description: string; icon: string; tone: string; earned: boolean };
 
+const generateMockHeatmap = () => {
+  const map: Record<string, number> = {};
+  const today = new Date();
+  for (let i = 0; i < 119; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    if (Math.random() > 0.35) {
+      map[dateStr] = Math.round(3600 + Math.random() * 14400); // 1 to 5 hours
+    }
+  }
+  return map;
+};
+
+const MOCK_HOURLY = [
+  50, 20, 0, 0, 0, 100, 200, 400, 200, 150, 300, 600, 900, 1200, 1400, 1800, 2400, 2200, 1900, 3200, 4800, 3800, 1800, 800
+];
+
+const MOCK_TOP_LANGUAGES = [
+  { name: "TypeScript", seconds: 124000 },
+  { name: "CSS", seconds: 43200 },
+  { name: "HTML", seconds: 32000 },
+  { name: "Python", seconds: 28000 },
+  { name: "SQL", seconds: 14000 },
+];
+
 export function AnalyticsClient({
   dayMap,
   daysBack,
@@ -37,10 +63,25 @@ export function AnalyticsClient({
   longestStreak: number;
   badges: BadgeRow[];
 }) {
-  const hasData = totalSeconds > 0;
-  const peakHour = hourly.reduce((best, v, i) => (v > hourly[best] ? i : best), 0);
-  const maxHour = Math.max(1, ...hourly);
-  const maxLang = Math.max(1, ...topLanguages.map((l) => l.seconds));
+  const isMockActive = totalSeconds === 0;
+
+  const actualTotalSeconds = isMockActive ? 241200 : totalSeconds;
+  const actualCurrentStreak = isMockActive ? 7 : currentStreak;
+  const actualLongestStreak = isMockActive ? 10 : longestStreak;
+  const actualDayMap = isMockActive ? generateMockHeatmap() : dayMap;
+  const actualHourly = isMockActive ? MOCK_HOURLY : hourly;
+  const actualTopLanguages = isMockActive ? MOCK_TOP_LANGUAGES : topLanguages;
+  const actualBadges = isMockActive
+    ? badges.map((b) => ({
+        ...b,
+        earned: ["first_commit", "streak_7", "deep_work", "night_owl"].includes(b.slug),
+      }))
+    : badges;
+
+  const hasData = actualTotalSeconds > 0;
+  const peakHour = actualHourly.reduce((best, v, i) => (v > actualHourly[best] ? i : best), 0);
+  const maxHour = Math.max(1, ...actualHourly);
+  const maxLang = Math.max(1, ...actualTopLanguages.map((l) => l.seconds));
 
   return (
     <div className="space-y-6">
@@ -50,9 +91,9 @@ export function AnalyticsClient({
       </div>
 
       <Stagger className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StaggerItem><StatCard icon={Clock} label="Total coded" value={hoursValue(totalSeconds)} decimals={1} suffix="h" tone="primary" hint="last 17 weeks" /></StaggerItem>
-        <StaggerItem><StatCard icon={Flame} label="Current streak" value={currentStreak} suffix="d" /></StaggerItem>
-        <StaggerItem><StatCard icon={Trophy} label="Longest streak" value={longestStreak} suffix="d" /></StaggerItem>
+        <StaggerItem><StatCard icon={Clock} label="Total coded" value={hoursValue(actualTotalSeconds)} decimals={1} suffix="h" tone="primary" hint="last 17 weeks" /></StaggerItem>
+        <StaggerItem><StatCard icon={Flame} label="Current streak" value={actualCurrentStreak} suffix="d" /></StaggerItem>
+        <StaggerItem><StatCard icon={Trophy} label="Longest streak" value={actualLongestStreak} suffix="d" /></StaggerItem>
         <StaggerItem><StatCard icon={Clock} label="Peak hour" value={peakHour} suffix=":00" hint={hasData ? "most productive" : "—"} /></StaggerItem>
       </Stagger>
 
@@ -61,7 +102,7 @@ export function AnalyticsClient({
         <h2 className="mb-3 text-title-md text-ink">Contribution heatmap</h2>
         <Card>
           <CardContent>
-            {hasData ? <Heatmap dayMap={dayMap} daysBack={daysBack} /> : (
+            {hasData ? <Heatmap dayMap={actualDayMap} daysBack={daysBack} /> : (
               <p className="py-6 text-center text-body-sm text-muted">
                 No activity yet — your heatmap fills in as you code.
               </p>
@@ -78,7 +119,7 @@ export function AnalyticsClient({
             <CardContent>
               {hasData ? (
                 <div className="flex h-40 items-end gap-[3px]">
-                  {hourly.map((v, i) => (
+                  {actualHourly.map((v, i) => (
                     <motion.div
                       key={i}
                       initial={{ height: 0 }}
@@ -107,10 +148,10 @@ export function AnalyticsClient({
           <h2 className="mb-3 text-title-md text-ink">Top languages</h2>
           <Card>
             <CardContent className="space-y-3">
-              {topLanguages.length === 0 ? (
+              {actualTopLanguages.length === 0 ? (
                 <p className="py-10 text-center text-body-sm text-muted">No languages tracked yet.</p>
               ) : (
-                topLanguages.map((l, i) => (
+                actualTopLanguages.map((l, i) => (
                   <div key={l.name}>
                     <div className="mb-1 flex items-baseline justify-between text-body-sm">
                       <span className="text-ink">{l.name}</span>
@@ -136,7 +177,7 @@ export function AnalyticsClient({
       <div>
         <h2 className="mb-3 text-title-md text-ink">Badges</h2>
         <Stagger className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {badges.map((b) => {
+          {actualBadges.map((b) => {
             const Icon = ICONS[b.icon] ?? Award;
             return (
               <StaggerItem key={b.id}>
